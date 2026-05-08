@@ -176,5 +176,5 @@ app.post("/lead", async (req, res) => {
 });
 
 app.listen(5000, () => {
-  console.log("🚀 Server running on http://localhost:5000");
+  console.log("🚀 Server running on https://homebridgelet-backend-1.onrender.com/lead");
 });
