@@ -19,8 +19,13 @@ app.use(express.json());
 const SHEET_ID = "1PEBwFzBCUjsuJYuiwWHbMsh8eg3A2lsu5dxcsOIIK0M";
 const SHEET_NAME = "HomeBridge_Letting's";
 
-const auth = new google.auth.GoogleAuth({
+/*const auth = new google.auth.GoogleAuth({
   keyFile: "credentials.json",
+  scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+});*/
+
+const auth = new google.auth.GoogleAuth({
+  credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 });
 
