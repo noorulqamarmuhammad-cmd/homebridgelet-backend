@@ -19,36 +19,34 @@ app.use(express.json());
 const SHEET_ID = "1PEBwFzBCUjsuJYuiwWHbMsh8eg3A2lsu5dxcsOIIK0M";
 const SHEET_NAME = "HomeBridge_Letting's";
 
-/*const auth = new google.auth.GoogleAuth({
-  keyFile: "credentials.json",
-  scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-});*/
-
-const auth = new google.auth.GoogleAuth({
-  credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
-  scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-});
-
 async function saveToSheet(data) {
-  const client = await auth.getClient();
-  const sheets = google.sheets({ version: "v4", auth: client });
-  const row = [
-    new Date().toLocaleString("en-GB"),
-    data.name     || "",
-    data.phone    || "",
-    data.email    || "",
-    data.postcode || "",
-    data.rent     || "",
-    data.service  || "",
-    data.message  || "",
-  ];
-  await sheets.spreadsheets.values.append({
-    spreadsheetId: SHEET_ID,
-    range: `${SHEET_NAME}!A:H`,
-    valueInputOption: "USER_ENTERED",
-    resource: { values: [row] },
-  });
-  console.log("✅ Saved to Google Sheets!");
+  try {
+    const auth = new google.auth.GoogleAuth({
+      credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
+      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+    });
+    const client = await auth.getClient();
+    const sheets = google.sheets({ version: "v4", auth: client });
+    const row = [
+      new Date().toLocaleString("en-GB"),
+      data.name     || "",
+      data.phone    || "",
+      data.email    || "",
+      data.postcode || "",
+      data.rent     || "",
+      data.service  || "",
+      data.message  || "",
+    ];
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: SHEET_ID,
+      range: `${SHEET_NAME}!A:H`,
+      valueInputOption: "USER_ENTERED",
+      resource: { values: [row] },
+    });
+    console.log("✅ Saved to Google Sheets!");
+  } catch(err) {
+    console.error("❌ Sheets error:", err.message);
+  }
 }
 
 // ── EMAIL SETUP ───────────────────────────────
@@ -66,24 +64,6 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-
-/*const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: "noorulqamarmuhammad@gmail.com",
-    pass: "ybwslcvvuzmfcblv",
-  },
-});
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: "noorulqamarmuhammad@gmail.com",
-    pass: "ybwslcvvuzmfcblv",
-  },
-});*/
-
 // ── ROUTES ────────────────────────────────────
 app.get("/", (req, res) => {
   res.send("HomeBridge Lettings backend is running!");
@@ -93,9 +73,12 @@ app.post("/lead", async (req, res) => {
   const { name, phone, email, postcode, rent, service, message } = req.body;
   console.log("📥 New lead received:", req.body);
 
-  const [sheetResult, emailResult] = await Promise.allSettled([
-    saveToSheet(req.body),
-    transporter.sendMail({
+  // Save to sheets
+  await saveToSheet(req.body);
+
+  // Send email
+  try {
+    await transporter.sendMail({
       from: "noorulqamarmuhammad@gmail.com",
       to: "noorulqamarmuhammad@gmail.com",
       subject: `🏠 New Property Lead — ${name}`,
@@ -124,11 +107,11 @@ app.post("/lead", async (req, res) => {
           </div>
         </div>
       `,
-    }),
-  ]);
-
-  if (sheetResult.status === "rejected") console.error("❌ Sheets error:", sheetResult.reason?.message);
-  if (emailResult.status === "rejected") console.error("❌ Email error:", emailResult.reason?.message);
+    });
+    console.log("📧 Email sent!");
+  } catch(err) {
+    console.error("❌ Email error:", err.message);
+  }
 
   res.status(200).json({ success: true, message: "Lead received!" });
 });
