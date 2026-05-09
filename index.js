@@ -54,6 +54,21 @@ async function saveToSheet(data) {
 // ── EMAIL SETUP ───────────────────────────────
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  requireTLS: true,
+  auth: {
+    user: "noorulqamarmuhammad@gmail.com",
+    pass: "ybwslcvvuzmfcblv",
+  },
+  tls: {
+    rejectUnauthorized: false
+  }
+});
+
+
+/*const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
   port: 465,
   secure: true,
   auth: {
@@ -61,7 +76,7 @@ const transporter = nodemailer.createTransport({
     pass: "ybwslcvvuzmfcblv",
   },
 });
-/*const transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: "noorulqamarmuhammad@gmail.com",
