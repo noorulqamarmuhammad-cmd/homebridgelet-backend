@@ -53,12 +53,21 @@ async function saveToSheet(data) {
 
 // ── EMAIL SETUP ───────────────────────────────
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
     user: "noorulqamarmuhammad@gmail.com",
     pass: "ybwslcvvuzmfcblv",
   },
 });
+/*const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "noorulqamarmuhammad@gmail.com",
+    pass: "ybwslcvvuzmfcblv",
+  },
+});*/
 
 // ── ROUTES ────────────────────────────────────
 app.get("/", (req, res) => {
