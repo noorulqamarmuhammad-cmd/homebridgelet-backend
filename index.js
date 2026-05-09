@@ -1,8 +1,9 @@
 const express = require("express");
-const nodemailer = require("nodemailer");
 const { google } = require("googleapis");
+const { Resend } = require("resend");
 
 const app = express();
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ── CORS ──────────────────────────────────────
 app.use((req, res, next) => {
@@ -49,21 +50,6 @@ async function saveToSheet(data) {
   }
 }
 
-// ── EMAIL SETUP ───────────────────────────────
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  requireTLS: true,
-  auth: {
-    user: "noorulqamarmuhammad@gmail.com",
-    pass: process.env.EMAIL_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false
-  }
-});
-
 // ── ROUTES ────────────────────────────────────
 app.get("/", (req, res) => {
   res.send("HomeBridge Lettings backend is running!");
@@ -73,13 +59,13 @@ app.post("/lead", async (req, res) => {
   const { name, phone, email, postcode, rent, service, message } = req.body;
   console.log("📥 New lead received:", req.body);
 
-  // Save to sheets
+  // Save to Google Sheets
   await saveToSheet(req.body);
 
-  // Send email
+  // Send email via Resend
   try {
-    await transporter.sendMail({
-      from: "noorulqamarmuhammad@gmail.com",
+    await resend.emails.send({
+      from: "onboarding@resend.dev",
       to: "noorulqamarmuhammad@gmail.com",
       subject: `🏠 New Property Lead — ${name}`,
       html: `
